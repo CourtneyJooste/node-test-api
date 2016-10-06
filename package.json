@@ -1,0 +1,19 @@
+{
+  "name": "node-api",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:CourtneyJooste/test-ember.git"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Courtney Jooste",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "~1.0.1",
+    "express": "~4.0.0",
+    "mongoose": "^4.6.3",
+    "morgan": "~1.0.0"
+  }
+}
