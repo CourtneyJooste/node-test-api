@@ -2,10 +2,16 @@
 // =============================================================================
 
 // call the packages we need
+var path = require('path');
 var express    = require('express');
 var bodyParser = require('body-parser');
 var app        = express();
 var morgan     = require('morgan');
+var EmailTemplates = require('swig-email-templates');
+var nodemailer = require('nodemailer');
+var templates = new EmailTemplates({
+  root: path.join(__dirname, "templates")
+});
 
 // configure app
 app.use(morgan('dev')); // log requests to the console
@@ -19,6 +25,15 @@ var port     = process.env.PORT || 8080; // set our port
 var mongoose   = require('mongoose');
 mongoose.connect('mongodb://node:node@jello.modulusmongo.net:27017/qe6Jovav'); // connect to our database
 var Bear     = require('./app/models/bear');
+var Contact     = require('./app/models/contact');
+
+var transporter = nodemailer.createTransport({
+    service: 'Gmail',
+    auth: {
+        user: 'pearmailserver@gmail.com',
+        pass: 'P34rl1f3'
+    }
+});
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -121,6 +136,47 @@ router.route('/bears/:bear_id')
 
 			res.json({ message: 'Successfully deleted' });
 		});
+	});
+
+
+router.route('/contact')
+
+	.put(function(req, res) {
+		console.log("Contact request recieved");
+		var to = req.param('to');
+		var from = req.param('from');
+		var subject = req.param('subject');
+		var message = req.param('message');
+		console.log("TO: " + to);
+		console.log("FROM: " + from);
+		console.log("SUBJECT: " + subject);
+		console.log("MESSAGE: " + message);
+		var customMessage = {
+            senderName: "TEST",
+            receiverName: "TEST2",
+            messageText: message
+        };
+		templates.render('messageRequest.html', customMessage, function(err, html, text) {
+            var mailOptions = {
+                from: from, // sender address
+                replyTo: from, //Reply to address
+                to: to,
+                subject: subject, // Subject line
+                html: html, // html body
+                text: text  //Text equivalent
+            };
+
+            // send mail with defined transport object
+            transporter.sendMail(mailOptions, function(error, info) {
+                if (error) {
+                    console.log("MESSAGE REQUEST ERROR");
+					return res.send(error);
+                }
+                console.log('Message sent: ' + info.response);
+				res.json({ message: 'Message sent!' });
+
+            });
+        });
 	});
 
 
